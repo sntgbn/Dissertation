@@ -67,15 +67,15 @@ float dry_brush_granulation = 0.0f;
 float dry_brush_density = 0.5f;
 
 // Model Load Variables & VAO Variables
-BlenderObj sphereMesh("../meshes/cone.obj");
-//BlenderObj sphereMesh("../meshes/bunny.obj");
+//BlenderObj sphereMesh("../meshes/cone.obj");
+BlenderObj sphereMesh("../meshes/bunny.obj");
 GLuint sphereVao;
 GLuint texCube;
 
 // Mesh Projection Matrices
 ProjectionMatrices bunny_mesh;
-vec3 bunny_position = vec3(0.0f, -0.9f, -30.0f);
-//vec3 bunny_position = vec3(0.0f, -0.9f, -2.5f);
+//vec3 bunny_position = vec3(0.0f, -0.9f, -30.0f);
+vec3 bunny_position = vec3(0.0f, -0.9f, -2.5f);
 float rotation_deg = 0;
 
 // Texture/Normal map ID
@@ -176,9 +176,9 @@ void updateScene() {
 void init()
 {
 	// Set up the shaders
-	CompileShaders(reflection_program_id, "../Shaders/vertexShader.glsl", "../Shaders/inkShader.glsl");
+	CompileShaders(reflection_program_id, "../Shaders/vertexShader.glsl", "../Shaders/sumiEShader.glsl");
 
-	bind_texture(paper_texture_id, "../textures/watercolor_paper_tex.jpg");
+	bind_texture(paper_texture_id, "../textures/brush_pattern.png");
 	bind_mipmap(paper_normal_id, "../textures/watercolor_normal.jpg");
 	bind_mipmap(paper_height_id, "../textures/watercolor_normal.jpg");
 	// load mesh into a vertex buffer array
