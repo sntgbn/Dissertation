@@ -43,14 +43,12 @@ void main() {
 	float m = 2 * sqrt(pow(r.x, 2)+pow(r.y, 2) + pow(r.z+1,2));
 	float tu = r.x/m + 1/2;
 	float tv = r.y/m + 1/2;
-	color = texture(texture_map, vec2(tu, tv));
-	// sampled_texture = texture(texture_map, vec2(tu, tv))
 
-	// if (dot(viewDir, normal_dir) < mix(unlit_outline_thickness, lit_outline_thickness, max(0.0, dot(normal_dir, light_dir)))) {
-	// 	// color = vec4(vec3(outLineColor) * vec3(lightColor), 1.0);
-	// 	color = texture(texture_map, vec2(tu, tv));
-	// } else {
-	// 	color = vec4(vec3(1.0, 1.0, 1.0), 1.0);
-	// }
+	if (dot(viewDir, normal_dir) < mix(unlit_outline_thickness, lit_outline_thickness, max(0.0, dot(normal_dir, light_dir)))) {
+		// color = vec4(vec3(outLineColor) * vec3(lightColor), 1.0);
+		color = texture(texture_map, vec2(tu, tv)*wobble_distortion);
+	} else {
+		color = vec4(vec3(1.0, 1.0, 1.0), 1.0);
+	}
 	frag_color = color;
 }

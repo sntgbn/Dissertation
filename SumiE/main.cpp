@@ -31,10 +31,9 @@
 
 using namespace std;
 GLuint reflection_program_id;
+GLuint cubeMapShaderID;
 shaderLocations reflection_locations;
-shaderLocations refraction_locations;
-shaderLocations fresnel_locations;
-shaderLocations chromatic_dispersionn_locations;
+shaderLocations cubemap_shader_locations;
 
 // Variables referenced in header files
 bool camera_switch = false;
@@ -70,6 +69,7 @@ float dry_brush_density = 0.5f;
 //BlenderObj sphereMesh("../meshes/cone.obj");
 BlenderObj sphereMesh("../meshes/bunny.obj");
 GLuint sphereVao;
+GLuint cubeMapVao;
 GLuint texCube;
 
 // Mesh Projection Matrices
@@ -95,6 +95,18 @@ void display(){
 
 	// View Port
 	glViewport(0, 0, width, height);
+	// Cube Map
+	int p_cube_location = glGetUniformLocation(cubeMapShaderID, "P");
+	int v_cube_location = glGetUniformLocation(cubeMapShaderID, "V");
+	glDepthMask(GL_FALSE);
+	glUseProgram(cubeMapShaderID);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texCube);
+	glBindVertexArray(cubeMapVao);
+	glUniformMatrix4fv(p_cube_location, 1, GL_FALSE, bunny_mesh.projection.m);
+	glUniformMatrix4fv(v_cube_location, 1, GL_FALSE, bunny_mesh.view.m);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glDepthMask(GL_TRUE);
 
 	// Uniforms
 	int model_location = glGetUniformLocation(reflection_program_id, "model");
@@ -177,12 +189,21 @@ void init()
 {
 	// Set up the shaders
 	CompileShaders(reflection_program_id, "../Shaders/vertexShader.glsl", "../Shaders/sumiEShader.glsl");
+	CompileShaders(cubeMapShaderID, "../Shaders/cubeMapVertexShader.glsl", "../Shaders/cubeMapFragmentShader.glsl");
 
-	bind_texture(paper_texture_id, "../textures/brush_pattern.png");
+	bind_texture(paper_texture_id, "../textures/brush_pattern.jpg");
 	bind_mipmap(paper_normal_id, "../textures/watercolor_normal.jpg");
 	bind_mipmap(paper_height_id, "../textures/watercolor_normal.jpg");
 	// load mesh into a vertex buffer array
 	generateObjectBuffer(sphereVao, sphereMesh, reflection_program_id, reflection_locations);
+	compile_cube_map(cubeMapVao, cubeMapShaderID, cubemap_shader_locations);
+	create_cube_map("../Canvas/negz.jpg",
+		"../Canvas/posz.jpg",
+		"../Canvas/posy.jpg",
+		"../Canvas/negy.jpg",
+		"../Canvas/negx.jpg",
+		"../Canvas/posx.jpg",
+		&texCube);
 }
 
 int main(int argc, char** argv){
