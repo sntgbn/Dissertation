@@ -43,12 +43,55 @@ void main() {
 	float m = 2 * sqrt(pow(r.x, 2)+pow(r.y, 2) + pow(r.z+1,2));
 	float tu = r.x/m + 1/2;
 	float tv = r.y/m + 1/2;
-
+	// if (dot(viewDir, normal_dir) < 1.0) {
 	if (dot(viewDir, normal_dir) < mix(unlit_outline_thickness, lit_outline_thickness, max(0.0, dot(normal_dir, light_dir)))) {
-		// color = vec4(vec3(outLineColor) * vec3(lightColor), 1.0);
 		color = texture(texture_map, vec2(tu, tv)*wobble_distortion);
 	} else {
-		color = vec4(vec3(1.0, 1.0, 1.0), 1.0);
+		float intensity;
+		intensity = dot(light_dir, normalize(norm));
+		// Main color W
+		if (intensity > 0.6) {
+			color = vec4(1.0, 1.0, 1.0, 1.0);
+		}
+		// Transition from secondary colors 3
+		// Secondary color LG-W2
+		else if (intensity > 0.525) {
+			color = vec4(0.89, 0.89, 0.89, 1.0);
+		}
+		// Secondary color LG-W1
+		else if (intensity > 0.475) {
+			color = vec4(0.8, 0.8, 0.8, 1.0);
+		}
+		// Main color LG
+		else if (intensity > 0.4) {
+			color = vec4(0.737, 0.737, 0.737, 1.0);
+		}
+		// Transition from secondary colors 2
+		// Secondary color DG-LG2
+		else if (intensity > 0.325) {
+			color = vec4(0.6235, 0.6235, 0.6235, 1.0);
+		}
+		// Secondary color DG-LG1
+		else if (intensity > 0.275) {
+			color = vec4(0.43, 0.43, 0.43, 1.0);
+		}
+		// Main color DG
+		else if (intensity > 0.2) {
+			color = vec4(0.321, 0.321, 0.321, 1.0);
+		}
+		// Transition from secondary colors 1
+		// Secondary color B-DG2
+		else if (intensity > 0.125) {
+			color = vec4(0.2313, 0.2313, 0.2313, 1.0);
+		}
+		// Secondary color B-DG1
+		else if (intensity > 0.75) {
+			color = vec4(0.098, 0.098, 0.098, 1.0);
+		}
+		// Main color B
+		else {
+			color = vec4(0.0, 0.0, 0.0, 1.0);
+		}
 	}
 	frag_color = color;
 }

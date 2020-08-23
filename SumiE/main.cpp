@@ -99,12 +99,13 @@ void display(){
 	int p_cube_location = glGetUniformLocation(cubeMapShaderID, "P");
 	int v_cube_location = glGetUniformLocation(cubeMapShaderID, "V");
 	glDepthMask(GL_FALSE);
-	glUseProgram(cubeMapShaderID);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, texCube);
-	glBindVertexArray(cubeMapVao);
-	glUniformMatrix4fv(p_cube_location, 1, GL_FALSE, bunny_mesh.projection.m);
-	glUniformMatrix4fv(v_cube_location, 1, GL_FALSE, bunny_mesh.view.m);
+	// Uncomment to draw cubemap
+	//glUseProgram(cubeMapShaderID);
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_CUBE_MAP, texCube);
+	//glBindVertexArray(cubeMapVao);
+	//glUniformMatrix4fv(p_cube_location, 1, GL_FALSE, bunny_mesh.projection.m);
+	//glUniformMatrix4fv(v_cube_location, 1, GL_FALSE, bunny_mesh.view.m);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glDepthMask(GL_TRUE);
 
@@ -170,7 +171,7 @@ void updateScene() {
 		delta = 0.03f;
 	last_time = curr_time;
 	// Model Matrix
-	rotation_deg += 0.05;
+	//rotation_deg += 0.05;
 	bunny_mesh.model = rotate_y_deg(identity_mat4(), rotation_deg);
 	bunny_mesh.model = scale(bunny_mesh.model, vec3(12.0f, 12.0f, 12.0f));
 	bunny_mesh.model = translate(bunny_mesh.model, bunny_position);
@@ -227,7 +228,7 @@ int main(int argc, char** argv){
 	shader_settings = TwNewBar("Shader Settings");
 	TwAddVarRW(shader_settings, "Unlit Outline Thickness", TW_TYPE_FLOAT, &unlit_outline_thickness, "label='Unlit Outline Thickness' min=-1 max=1 step=0.05 help='Unlit Outline Thickness'");
 	TwAddVarRW(shader_settings, "Lit Outline Thickness", TW_TYPE_FLOAT, &lit_outline_thickness, "label='Lit Outline Thickness' min=-1 max=1 step=0.05 help='Lit Outline Thickness'");
-	TwAddVarRW(shader_settings, "Wobble Distortion", TW_TYPE_FLOAT, &wobble_distortion, "label='Wobble Distortion' min=1 max=10 step=0.05 help='Wobble Distortion'");
+	TwAddVarRW(shader_settings, "Wobble Distortion", TW_TYPE_FLOAT, &wobble_distortion, "label='Wobble Distortion' min=-10 max=10 step=0.05 help='Wobble Distortion'");
 	TwAddVarRW(shader_settings, "Paper Roughness", TW_TYPE_FLOAT, &paper_roughness, "label='Paper Roughness' min=-1 max=1 step=0.05 help='Paper Roughness'");
 	TwAddVarRW(shader_settings, "Diffuse Factor", TW_TYPE_FLOAT, &diffuse_factor, "label='Diffuse Factor' min=0 max=5 step=0.05 help='Diffuse Factor'");
 	TwAddVarRW(shader_settings, "Application Parameter", TW_TYPE_FLOAT, &dry_brush_granulation, "label='Application Parameter' min=-1 max=1 step=0.1 help='Application Parameter'");
