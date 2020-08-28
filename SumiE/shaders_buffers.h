@@ -29,10 +29,8 @@ class shaderLocations {
 		GLuint lit_outline_thickness_location;
 		GLuint unlit_outline_thickness_location;
 		GLuint wobble_distortion_location;
-		GLuint paper_roughness_location;
-		GLuint diffuse_factor_location;
-		GLuint dry_brush_granulation_location;
-		GLuint dry_brush_density_location;
+		GLuint paper_alpha_threshold_location;
+		GLuint paper_alpha_div_location;
 };
 
 void generateObjectBuffer(GLuint& objectVao, BlenderObj& blenderObject, GLuint& shaderProgramID, shaderLocations& shaderVariableLocations);

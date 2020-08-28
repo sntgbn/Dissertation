@@ -60,10 +60,9 @@ GLuint viewPositionLocation;
 float unlit_outline_thickness = 0.5f; // specular_strength_location
 float lit_outline_thickness = 0.5f; // ambient_strength_location
 float wobble_distortion = 1.0f;
-float paper_roughness = 0.5f;
-float diffuse_factor = 1.0f;
-float dry_brush_granulation = 0.0f;
-float dry_brush_density = 0.5f;
+float paper_alpha_thresh = 0.0f;
+float paper_alpha_div = 1.0f;
+UINT texture_selection = 0;
 
 // Model Load Variables & VAO Variables
 //BlenderObj sphereMesh("../meshes/cone.obj");
@@ -87,8 +86,10 @@ GLuint paper_height_id;
 TwBar* shader_settings;
 
 void display(){
-	// tell GL to only draw onto a pixel if the shape is closer to the viewer
+	// tell GL to only draw onto a pixel if the shape is closer to the viewer	
 	glEnable (GL_DEPTH_TEST); // enable depth-testing
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDepthFunc (GL_LESS); // depth-testing interprets a smaller value as "closer"
 	glClearColor (0.5f, 0.5f, 0.5f, 1.0f);
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -100,12 +101,13 @@ void display(){
 	int v_cube_location = glGetUniformLocation(cubeMapShaderID, "V");
 	glDepthMask(GL_FALSE);
 	// Uncomment to draw cubemap
-	//glUseProgram(cubeMapShaderID);
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_CUBE_MAP, texCube);
-	//glBindVertexArray(cubeMapVao);
-	//glUniformMatrix4fv(p_cube_location, 1, GL_FALSE, bunny_mesh.projection.m);
-	//glUniformMatrix4fv(v_cube_location, 1, GL_FALSE, bunny_mesh.view.m);
+	glUseProgram(cubeMapShaderID);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texCube);
+	glBindVertexArray(cubeMapVao);
+	glUniformMatrix4fv(p_cube_location, 1, GL_FALSE, bunny_mesh.projection.m);
+	glUniformMatrix4fv(v_cube_location, 1, GL_FALSE, bunny_mesh.view.m);
+	// Cubemap part ends here
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glDepthMask(GL_TRUE);
 
@@ -115,27 +117,17 @@ void display(){
 	int proj_mat_location = glGetUniformLocation(reflection_program_id, "proj");
 	int ortho_mat_location = glGetUniformLocation(reflection_program_id, "ortho");
 	int texture_location = glGetUniformLocation(reflection_program_id, "texture_map");
-	int normal_location = glGetUniformLocation(reflection_program_id, "normal_map");
-	int height_location = glGetUniformLocation(reflection_program_id, "height_map");
 	int lit_outline_thickness_location = glGetUniformLocation(reflection_program_id, "lit_outline_thickness");
 	int unlit_outline_thickness_location = glGetUniformLocation(reflection_program_id, "ulit_outline_thickness");
 	int wobble_distortion_location = glGetUniformLocation(reflection_program_id, "wobble_distortion");
-	int paper_roughness_location = glGetUniformLocation(reflection_program_id, "paper_roughness");
-	int diffuse_factor_location = glGetUniformLocation(reflection_program_id, "diffuse_factor");
-	int dry_brush_granulation_location = glGetUniformLocation(reflection_program_id, "dry_brush_granulation");
-	int dry_brush_density_location = glGetUniformLocation(reflection_program_id, "dry_brush_density");
+	int paper_alpha_threshold_location = glGetUniformLocation(reflection_program_id, "paper_alpha_threshold");
+	int paper_alpha_div_location = glGetUniformLocation(reflection_program_id, "paper_alpha_div");
 	// Using Program
 	glUseProgram(reflection_program_id);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, paper_texture_id);
 	glUniform1i(texture_location, 0);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, paper_normal_id);
-	glUniform1i(normal_location, 1);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, paper_height_id);
-	glUniform1i(height_location, 2);
 	
 	glBindVertexArray(sphereVao);
 	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, bunny_mesh.projection.m);
@@ -150,11 +142,8 @@ void display(){
 	glUniform1f(reflection_locations.lit_outline_thickness_location, lit_outline_thickness);
 	glUniform1f(reflection_locations.unlit_outline_thickness_location, unlit_outline_thickness);
 	glUniform1f(reflection_locations.wobble_distortion_location, wobble_distortion);
-	glUniform1f(reflection_locations.paper_roughness_location, paper_roughness);
-	glUniform1f(reflection_locations.diffuse_factor_location, diffuse_factor);
-	glUniform1f(reflection_locations.dry_brush_granulation_location, dry_brush_granulation);
-	glUniform1f(reflection_locations.dry_brush_granulation_location, dry_brush_granulation);
-	glUniform1f(reflection_locations.dry_brush_density_location, dry_brush_density);
+	glUniform1f(reflection_locations.paper_alpha_threshold_location, paper_alpha_thresh);
+	glUniform1f(reflection_locations.paper_alpha_div_location, paper_alpha_div);
 	// Draw tweakbar
 	TwDraw();
 	// Swap Buffers
@@ -182,7 +171,13 @@ void updateScene() {
 								camera_up);
 	// Light position
 	lightPositionUpdate(lightPositionDirection, lightPosition, lightPositionToggle);
+
 	glutPostRedisplay();
+
+	//// String Selection
+	//std::ostringstream texture_path_stream;
+	//texture_path_stream << "../textures/brush_pattern_" << texture_selection << ".jpg";
+	//bind_texture(paper_texture_id, texture_path_stream.str().c_str());
 }
 
 
@@ -192,9 +187,8 @@ void init()
 	CompileShaders(reflection_program_id, "../Shaders/vertexShader.glsl", "../Shaders/sumiEShader.glsl");
 	CompileShaders(cubeMapShaderID, "../Shaders/cubeMapVertexShader.glsl", "../Shaders/cubeMapFragmentShader.glsl");
 
-	bind_texture(paper_texture_id, "../textures/brush_pattern.jpg");
-	bind_mipmap(paper_normal_id, "../textures/watercolor_normal.jpg");
-	bind_mipmap(paper_height_id, "../textures/watercolor_normal.jpg");
+	bind_texture(paper_texture_id, "../textures/brush_pattern_0.jpg");
+
 	// load mesh into a vertex buffer array
 	generateObjectBuffer(sphereVao, sphereMesh, reflection_program_id, reflection_locations);
 	compile_cube_map(cubeMapVao, cubeMapShaderID, cubemap_shader_locations);
@@ -226,14 +220,12 @@ int main(int argc, char** argv){
 	//TwInit(TW_OPENGL_CORE, NULL); // for core profile
 	TwWindowSize(width, height);
 	shader_settings = TwNewBar("Shader Settings");
-	TwAddVarRW(shader_settings, "Unlit Outline Thickness", TW_TYPE_FLOAT, &unlit_outline_thickness, "label='Unlit Outline Thickness' min=-1 max=1 step=0.05 help='Unlit Outline Thickness'");
-	TwAddVarRW(shader_settings, "Lit Outline Thickness", TW_TYPE_FLOAT, &lit_outline_thickness, "label='Lit Outline Thickness' min=-1 max=1 step=0.05 help='Lit Outline Thickness'");
-	TwAddVarRW(shader_settings, "Wobble Distortion", TW_TYPE_FLOAT, &wobble_distortion, "label='Wobble Distortion' min=-10 max=10 step=0.05 help='Wobble Distortion'");
-	TwAddVarRW(shader_settings, "Paper Roughness", TW_TYPE_FLOAT, &paper_roughness, "label='Paper Roughness' min=-1 max=1 step=0.05 help='Paper Roughness'");
-	TwAddVarRW(shader_settings, "Diffuse Factor", TW_TYPE_FLOAT, &diffuse_factor, "label='Diffuse Factor' min=0 max=5 step=0.05 help='Diffuse Factor'");
-	TwAddVarRW(shader_settings, "Application Parameter", TW_TYPE_FLOAT, &dry_brush_granulation, "label='Application Parameter' min=-1 max=1 step=0.1 help='Application Parameter'");
-	TwAddVarRW(shader_settings, "Dry Brush Density", TW_TYPE_FLOAT, &dry_brush_density, "label='Dry Brush Density' min=0.5 max=10 step=0.5 help='Dry Brush Density'");
-
+	TwAddVarRW(shader_settings, "Unlit Outline", TW_TYPE_FLOAT, &unlit_outline_thickness, "label='Unlit Outline Thickness' min=-1 max=1 step=0.05 help='Unlit Outline Thickness'");
+	TwAddVarRW(shader_settings, "Lit Outline", TW_TYPE_FLOAT, &lit_outline_thickness, "label='Lit Outline Thickness' min=-1 max=1 step=0.05 help='Lit Outline Thickness'");
+	TwAddVarRW(shader_settings, "Wobble", TW_TYPE_FLOAT, &wobble_distortion, "label='Wobble Distortion' min=-10 max=10 step=0.05 help='Wobble Distortion'");
+	TwAddVarRW(shader_settings, "Paper Alpha Thresh ", TW_TYPE_FLOAT, &paper_alpha_thresh, "label='Paper Alpha Effect' min=0 max=1 step=0.001 help='Paper Alpha Effect'");
+	TwAddVarRW(shader_settings, "Paper Alpha Div", TW_TYPE_FLOAT, &paper_alpha_div, "label='Paper Alpha Effect' min=1 max=100 step=0.1 help='Paper Alpha Effect'");
+	//TwAddVarRW(shader_settings, "Texture Selection", TW_TYPE_INT8, &texture_selection, "label='Texture Selection' min=0 max=3 step=1 help='Texture Selection'");
 
 	// Tell glut where the display function is
 	glutDisplayFunc(display);

@@ -21,11 +21,8 @@ void generateObjectBuffer(GLuint& objectVao, BlenderObj& blenderObject, GLuint& 
     shaderVariableLocations.lit_outline_thickness_location = glGetUniformLocation(shaderProgramID, "lit_outline_thickness");
     shaderVariableLocations.unlit_outline_thickness_location = glGetUniformLocation(shaderProgramID, "unlit_outline_thickness");
     shaderVariableLocations.wobble_distortion_location = glGetUniformLocation(shaderProgramID, "wobble_distortion");
-    shaderVariableLocations.paper_roughness_location = glGetUniformLocation(shaderProgramID, "paper_roughness");
-    shaderVariableLocations.diffuse_factor_location = glGetUniformLocation(shaderProgramID, "diffuse_factor");
-    shaderVariableLocations.dry_brush_granulation_location = glGetUniformLocation(shaderProgramID, "dry_brush_granulation");
-    shaderVariableLocations.dry_brush_density_location = glGetUniformLocation(shaderProgramID, "dry_brush_density");
-        
+    shaderVariableLocations.paper_alpha_threshold_location = glGetUniformLocation(shaderProgramID, "paper_alpha_threshold");
+    shaderVariableLocations.paper_alpha_div_location = glGetUniformLocation(shaderProgramID, "paper_alpha_div");
 
     glGenBuffers(1, &vp_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vp_vbo);
@@ -38,14 +35,6 @@ void generateObjectBuffer(GLuint& objectVao, BlenderObj& blenderObject, GLuint& 
     glGenBuffers(1, &tc_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, tc_vbo);
     glBufferData(GL_ARRAY_BUFFER, 2 * blenderObject.getNumVertices() * sizeof(float), blenderObject.getTexcoords(), GL_STATIC_DRAW);
-
-    //glGenBuffers(1, &tg_vbo);
-    //glBindBuffer(GL_ARRAY_BUFFER, tg_vbo);
-    //glBufferData(GL_ARRAY_BUFFER, 3 * blenderObject.getNumVertices() * sizeof(float), blenderObject.getTangents(), GL_STATIC_DRAW);
-
-    //glGenBuffers(1, &btg_vbo);
-    //glBindBuffer(GL_ARRAY_BUFFER, btg_vbo);
-    //glBufferData(GL_ARRAY_BUFFER, 3 * blenderObject.getNumVertices() * sizeof(float), blenderObject.getBitangents(), GL_STATIC_DRAW);
 
     glGenVertexArrays(1, &objectVao);
     glBindVertexArray(objectVao);
@@ -62,14 +51,6 @@ void generateObjectBuffer(GLuint& objectVao, BlenderObj& blenderObject, GLuint& 
     glEnableVertexAttribArray(shaderVariableLocations.texture_coordinates_location);
     glBindBuffer(GL_ARRAY_BUFFER, tc_vbo);
     glVertexAttribPointer(shaderVariableLocations.texture_coordinates_location, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-    //// Tangents
-    //glEnableVertexAttribArray(shaderVariableLocations.tangents_location);
-    //glBindBuffer(GL_ARRAY_BUFFER, tg_vbo);
-    //glVertexAttribPointer(shaderVariableLocations.tangents_location, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    //// Bitangents
-    //glEnableVertexAttribArray(shaderVariableLocations.bitangents_location);
-    //glBindBuffer(GL_ARRAY_BUFFER, btg_vbo);
-    //glVertexAttribPointer(shaderVariableLocations.bitangents_location, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
 }
 
