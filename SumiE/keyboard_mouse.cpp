@@ -27,11 +27,18 @@ void key_press(unsigned char key, int mouse_x, int mouse_y) {
 			std::cout << "Changing light position" << std::endl;
 			lightPositionToggle = !lightPositionToggle;
 			break;
+		case('r'):
+			std::cout << "Toggling rotation" << std::endl;
+			//lightPositionToggle = !lightPositionToggle;
+			bunny_rotation_toggle = !bunny_rotation_toggle;
+			break;
 		case('R'):
 			camera_front = vec3(0.0f, 0.0f, -10.0f);
 			camera_up = vec3(0.0f, 1.0f, 0.0f);
 			// Sphere positions
 			bunny_position = vec3(0.0f, -1.0f, -3.0f);
+			bunny_rotation_toggle = false;
+			rotation_deg = 0.0f;
 			break;
 		}
 	}

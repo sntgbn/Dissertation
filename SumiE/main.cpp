@@ -1,4 +1,4 @@
-//Some Windows Headers (For Time, IO, etc.)
+﻿//Some Windows Headers (For Time, IO, etc.)
 #include <windows.h>
 #include <mmsystem.h>
 
@@ -60,8 +60,8 @@ GLuint viewPositionLocation;
 float unlit_outline_thickness = 0.5f; // specular_strength_location
 float lit_outline_thickness = 0.5f; // ambient_strength_location
 float wobble_distortion = 1.0f;
-float paper_alpha_thresh = 0.0f;
-float paper_alpha_div = 1.0f;
+float paper_alpha_thresh = 1.0f;
+float paper_alpha_div = 0.0f;
 UINT texture_selection = 0;
 
 // Model Load Variables & VAO Variables
@@ -76,6 +76,7 @@ ProjectionMatrices bunny_mesh;
 //vec3 bunny_position = vec3(0.0f, -0.9f, -30.0f);
 vec3 bunny_position = vec3(0.0f, -0.9f, -2.5f);
 float rotation_deg = 0;
+bool bunny_rotation_toggle = false;
 
 // Texture/Normal map ID
 GLuint paper_texture_id;
@@ -85,17 +86,16 @@ GLuint paper_height_id;
 // Tweak Bar
 TwBar* shader_settings;
 
-void display(){
+void display() {
 	// tell GL to only draw onto a pixel if the shape is closer to the viewer	
-	glEnable (GL_DEPTH_TEST); // enable depth-testing
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDepthFunc (GL_LESS); // depth-testing interprets a smaller value as "closer"
-	glClearColor (0.5f, 0.5f, 0.5f, 1.0f);
-	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST); // enable depth-testing
+	glDepthFunc(GL_LESS); // depth-testing interprets a smaller value as "closer"
+	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// View Port
 	glViewport(0, 0, width, height);
+
 	// Cube Map
 	int p_cube_location = glGetUniformLocation(cubeMapShaderID, "P");
 	int v_cube_location = glGetUniformLocation(cubeMapShaderID, "V");
@@ -104,12 +104,17 @@ void display(){
 	glUseProgram(cubeMapShaderID);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texCube);
-	glBindVertexArray(cubeMapVao);
+	glBindVertexArray(cubeMapVao);	
 	glUniformMatrix4fv(p_cube_location, 1, GL_FALSE, bunny_mesh.projection.m);
 	glUniformMatrix4fv(v_cube_location, 1, GL_FALSE, bunny_mesh.view.m);
-	// Cubemap part ends here
 	glDrawArrays(GL_TRIANGLES, 0, 36);
+	// Cubemap part ends here
 	glDepthMask(GL_TRUE);
+
+	// Blending part goes here
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glCullFace(GL_FRONT_AND_BACK);
 
 	// Uniforms
 	int model_location = glGetUniformLocation(reflection_program_id, "model");
@@ -160,7 +165,9 @@ void updateScene() {
 		delta = 0.03f;
 	last_time = curr_time;
 	// Model Matrix
-	//rotation_deg += 0.05;
+	if (bunny_rotation_toggle == true) {
+		rotation_deg += 0.075;
+	}
 	bunny_mesh.model = rotate_y_deg(identity_mat4(), rotation_deg);
 	bunny_mesh.model = scale(bunny_mesh.model, vec3(12.0f, 12.0f, 12.0f));
 	bunny_mesh.model = translate(bunny_mesh.model, bunny_position);
@@ -187,7 +194,7 @@ void init()
 	CompileShaders(reflection_program_id, "../Shaders/vertexShader.glsl", "../Shaders/sumiEShader.glsl");
 	CompileShaders(cubeMapShaderID, "../Shaders/cubeMapVertexShader.glsl", "../Shaders/cubeMapFragmentShader.glsl");
 
-	bind_texture(paper_texture_id, "../textures/brush_pattern_0.jpg");
+	bind_texture(paper_texture_id, "../textures/brush_pattern_3.jpg");
 
 	// load mesh into a vertex buffer array
 	generateObjectBuffer(sphereVao, sphereMesh, reflection_program_id, reflection_locations);
@@ -220,11 +227,11 @@ int main(int argc, char** argv){
 	//TwInit(TW_OPENGL_CORE, NULL); // for core profile
 	TwWindowSize(width, height);
 	shader_settings = TwNewBar("Shader Settings");
-	TwAddVarRW(shader_settings, "Unlit Outline", TW_TYPE_FLOAT, &unlit_outline_thickness, "label='Unlit Outline Thickness' min=-1 max=1 step=0.05 help='Unlit Outline Thickness'");
-	TwAddVarRW(shader_settings, "Lit Outline", TW_TYPE_FLOAT, &lit_outline_thickness, "label='Lit Outline Thickness' min=-1 max=1 step=0.05 help='Lit Outline Thickness'");
+	TwAddVarRW(shader_settings, "Unlit Outline", TW_TYPE_FLOAT, &unlit_outline_thickness, "label='Unlit Outline Thickness' min=0 max=1 step=0.05 help='Unlit Outline Thickness'");
+	TwAddVarRW(shader_settings, "Lit Outline", TW_TYPE_FLOAT, &lit_outline_thickness, "label='Lit Outline Thickness' min=0 max=1 step=0.05 help='Lit Outline Thickness'");
 	TwAddVarRW(shader_settings, "Wobble", TW_TYPE_FLOAT, &wobble_distortion, "label='Wobble Distortion' min=-10 max=10 step=0.05 help='Wobble Distortion'");
-	TwAddVarRW(shader_settings, "Paper Alpha Thresh ", TW_TYPE_FLOAT, &paper_alpha_thresh, "label='Paper Alpha Effect' min=0 max=1 step=0.001 help='Paper Alpha Effect'");
-	TwAddVarRW(shader_settings, "Paper Alpha Div", TW_TYPE_FLOAT, &paper_alpha_div, "label='Paper Alpha Effect' min=1 max=100 step=0.1 help='Paper Alpha Effect'");
+	TwAddVarRW(shader_settings, "Paper A Thresh ", TW_TYPE_FLOAT, &paper_alpha_thresh, "label='Paper A Thresh' min=0 max=1 step=0.001 help='Paper A Thresh'");
+	TwAddVarRW(shader_settings, "Paper A Div", TW_TYPE_FLOAT, &paper_alpha_div, "label='Paper A Div' min=0 max=1.0 step=0.001 help='Paper A Div'");
 	//TwAddVarRW(shader_settings, "Texture Selection", TW_TYPE_INT8, &texture_selection, "label='Texture Selection' min=0 max=3 step=1 help='Texture Selection'");
 
 	// Tell glut where the display function is
@@ -258,3 +265,4 @@ int main(int argc, char** argv){
     
 	return 0;
 }
+	

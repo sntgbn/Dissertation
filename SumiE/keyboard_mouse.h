@@ -20,6 +20,8 @@ extern bool lightPositionToggle;
 extern vec3 camera_front;
 extern vec3 camera_up;
 extern vec3 bunny_position;
+extern bool bunny_rotation_toggle;
+extern float rotation_deg;
 
 // keyboard/mouse input function declarations
 void key_press(unsigned char key, int mouse_x, int mouse_y);
