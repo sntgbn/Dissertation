@@ -114,7 +114,7 @@ void display() {
 	// Blending part goes here
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glCullFace(GL_FRONT_AND_BACK);
+	glCullFace(GL_BACK);
 
 	// Uniforms
 	int model_location = glGetUniformLocation(reflection_program_id, "model");
