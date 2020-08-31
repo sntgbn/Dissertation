@@ -56,8 +56,7 @@ void main() {
 
 	// if (dot(viewDir, normal_dir) < 1.0) {
 	if (dot(viewDir, normal_dir) < mix(unlit_outline_thickness, lit_outline_thickness, max(0.0, dot(normal_dir, light_dir)))) {
-		// color = vec4(0.0, 0.0, 0.0, 1.0);
-		color = clamp(texture(texture_map, vec2(tu, tv)*wobble_distortion), 0, 1.0);
+		color = clamp(texture(texture_map, vec2(tu, tv) + vec2(tu, tv)*wobble_distortion), 0, 1);
 	} else {
 		float intensity;
 		intensity = dot(light_dir, normalize(norm));
@@ -106,21 +105,15 @@ void main() {
 		}
 	}
 
-	// color = vec4(1, 1, 1, 1);
+	// Average color used to obtain alpha value
 	float avg_color = clamp((color.x + color.y + color.z)/3, 0.0, 1.0);
 	if(avg_color <= paper_alpha_threshold){
 		color.a = clamp((1 - avg_color), 0.0, 1.0);
 	} 
 
-	// 
+	// Threshold values
 	if(color.a < paper_alpha_div){
 		discard;
 	}
 	frag_color = color;
 }
-
-
-
-// New color in framebuffer =
-//            current alpha in framebuffer * current color in framebuffer +
-//            (1 - current alpha in framebuffer) * shader's output color	

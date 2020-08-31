@@ -59,7 +59,7 @@ GLuint viewPositionLocation;
 // Shader Type Ambient and Specular Lighting Strength
 float unlit_outline_thickness = 0.5f; // specular_strength_location
 float lit_outline_thickness = 0.5f; // ambient_strength_location
-float wobble_distortion = 1.0f;
+float wobble_distortion = 0.0f;
 float paper_alpha_thresh = 1.0f;
 float paper_alpha_div = 0.0f;
 UINT texture_selection = 0;
@@ -227,11 +227,11 @@ int main(int argc, char** argv){
 	//TwInit(TW_OPENGL_CORE, NULL); // for core profile
 	TwWindowSize(width, height);
 	shader_settings = TwNewBar("Shader Settings");
-	TwAddVarRW(shader_settings, "Unlit Outline", TW_TYPE_FLOAT, &unlit_outline_thickness, "label='Unlit Outline Thickness' min=0 max=1 step=0.05 help='Unlit Outline Thickness'");
-	TwAddVarRW(shader_settings, "Lit Outline", TW_TYPE_FLOAT, &lit_outline_thickness, "label='Lit Outline Thickness' min=0 max=1 step=0.05 help='Lit Outline Thickness'");
+	TwAddVarRW(shader_settings, "Unlit Outline", TW_TYPE_FLOAT, &unlit_outline_thickness, "label='Unlit Outline Thickness' min=-10 max=10 step=0.05 help='Unlit Outline Thickness'");
+	TwAddVarRW(shader_settings, "Lit Outline", TW_TYPE_FLOAT, &lit_outline_thickness, "label='Lit Outline Thickness' min=-10 max=10 step=0.05 help='Lit Outline Thickness'");
 	TwAddVarRW(shader_settings, "Wobble", TW_TYPE_FLOAT, &wobble_distortion, "label='Wobble Distortion' min=-10 max=10 step=0.05 help='Wobble Distortion'");
 	TwAddVarRW(shader_settings, "Paper A Thresh ", TW_TYPE_FLOAT, &paper_alpha_thresh, "label='Paper A Thresh' min=0 max=1 step=0.001 help='Paper A Thresh'");
-	TwAddVarRW(shader_settings, "Paper A Div", TW_TYPE_FLOAT, &paper_alpha_div, "label='Paper A Div' min=0 max=1.0 step=0.001 help='Paper A Div'");
+	TwAddVarRW(shader_settings, "Paper A Thresh Skip", TW_TYPE_FLOAT, &paper_alpha_div, "label='Paper A Thresh Skip' min=0 max=1.0 step=0.001 help='Paper A Thresh Skip'");
 	//TwAddVarRW(shader_settings, "Texture Selection", TW_TYPE_INT8, &texture_selection, "label='Texture Selection' min=0 max=3 step=1 help='Texture Selection'");
 
 	// Tell glut where the display function is
