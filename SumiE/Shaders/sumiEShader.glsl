@@ -7,7 +7,9 @@ in vec3 vs_position; // vs_position
 in vec3 vs_position_iso; // zwvEcVertex
 in vec2 a_texture_coordinate;
 
-uniform sampler2D texture_map;
+uniform sampler2D brush_texture_map;
+uniform sampler2D mesh_texture_map;
+uniform sampler2D mesh_normal_map;
 
 uniform samplerCube cube_texture;
 
@@ -18,7 +20,8 @@ uniform mat4 model, ortho, proj, view;
 uniform vec3 lightPos, viewPos;
 uniform float ambientStrength, specularStrength;
 	// Turn to uniforms later
-uniform float lit_outline_thickness, unlit_outline_thickness, wobble_distortion, paper_alpha_threshold, paper_alpha_div;
+uniform float lit_outline_thickness, unlit_outline_thickness, solid_outline_color, wobble_distortion, texture_luminance, paper_alpha_threshold, paper_alpha_div;
+uniform bool outline_selection, texture_selection;
 // Rename/delete these
 uniform float diffuse_factor, dry_brush_granulation, dry_brush_density; // Make this uniform variable (?)
 
@@ -37,6 +40,8 @@ void main() {
 	vec3 normal_dir = normalize(vs_normals);
 	vec3 outLineColor = vec3(0.0, 0.0, 0.0);
 	vec3 lightColor = vec3(1.0, 1.0, 1.0);
+	float intensity;
+	intensity = dot(light_dir, normalize(norm));
 	// Sumi-E Edges
 	vec3 vee = viewPos - vs_position;
 	vec3 vee_norm = normalize(vee);
@@ -46,20 +51,17 @@ void main() {
 	float tu = r.x/m + 1/2;
 	float tv = r.y/m + 1/2;
 
-	// Fetching texture effects
-	vec3 incident_eye = normalize(pos_eye);
-	vec3 normal = normalize(n_eye);
-
-	vec3 reflected = reflect(incident_eye, normal);
-	reflected = vec3(inverse(view) * vec4(reflected, 0.0));
-	vec3 paper_texture = texture(cube_texture, reflected).rgb;
 
 	// if (dot(viewDir, normal_dir) < 1.0) {
 	if (dot(viewDir, normal_dir) < mix(unlit_outline_thickness, lit_outline_thickness, max(0.0, dot(normal_dir, light_dir)))) {
-		color = clamp(texture(texture_map, vec2(tu, tv) + vec2(tu, tv)*wobble_distortion), 0, 1);
+		if(outline_selection == true){
+			color = clamp(texture(brush_texture_map, vec2(tu, tv) + vec2(tu, tv)*wobble_distortion), 0, 1);
+		}else{
+			color = vec4(solid_outline_color, solid_outline_color, solid_outline_color, 1.0);
+		}
+		
 	} else {
-		float intensity;
-		intensity = dot(light_dir, normalize(norm));
+
 		// Main color W
 		if (intensity > 0.6) {
 			color = vec4(1.0, 1.0, 1.0, 1.0);
@@ -103,6 +105,15 @@ void main() {
 		else {
 			color = vec4(0.0, 0.0, 0.0, 1.0);
 		}
+	}
+	if(texture_selection==true){
+		// Normal Mapping Part
+		vec3 diffuse_texture_color = texture(mesh_texture_map, a_texture_coordinate).rgb;
+		// Limunance
+		float diffuse_texture_bw = texture_luminance*dot(diffuse_texture_color, vec3(0.2126729, 0.7151522, 0.0721750));
+
+		// cel shader color * diffuse texture BW color
+		color = color*vec4(diffuse_texture_bw, diffuse_texture_bw, diffuse_texture_bw, 1.0);
 	}
 
 	// Average color used to obtain alpha value

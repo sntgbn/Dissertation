@@ -28,7 +28,11 @@ class shaderLocations {
 		GLuint specular_strength_location;
 		GLuint lit_outline_thickness_location;
 		GLuint unlit_outline_thickness_location;
+		GLuint solid_outline_color_location;
+		GLuint outline_selection_location;
 		GLuint wobble_distortion_location;
+		GLuint texture_selection_location;
+		GLuint texture_luminance_location;
 		GLuint paper_alpha_threshold_location;
 		GLuint paper_alpha_div_location;
 };

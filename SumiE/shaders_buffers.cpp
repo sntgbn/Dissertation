@@ -20,7 +20,11 @@ void generateObjectBuffer(GLuint& objectVao, BlenderObj& blenderObject, GLuint& 
     shaderVariableLocations.specular_strength_location = glGetUniformLocation(shaderProgramID, "specularStrength");
     shaderVariableLocations.lit_outline_thickness_location = glGetUniformLocation(shaderProgramID, "lit_outline_thickness");
     shaderVariableLocations.unlit_outline_thickness_location = glGetUniformLocation(shaderProgramID, "unlit_outline_thickness");
+    shaderVariableLocations.solid_outline_color_location = glGetUniformLocation(shaderProgramID, "solid_outline_color");
+    shaderVariableLocations.outline_selection_location = glGetUniformLocation(shaderProgramID, "outline_selection");
     shaderVariableLocations.wobble_distortion_location = glGetUniformLocation(shaderProgramID, "wobble_distortion");
+    shaderVariableLocations.texture_selection_location = glGetUniformLocation(shaderProgramID, "texture_selection");
+    shaderVariableLocations.texture_luminance_location = glGetUniformLocation(shaderProgramID, "texture_luminance");
     shaderVariableLocations.paper_alpha_threshold_location = glGetUniformLocation(shaderProgramID, "paper_alpha_threshold");
     shaderVariableLocations.paper_alpha_div_location = glGetUniformLocation(shaderProgramID, "paper_alpha_div");
 

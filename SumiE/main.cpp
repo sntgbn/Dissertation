@@ -25,7 +25,6 @@
 #include <yaw_pitch_roll.h>
 #include "teapot.h" // teapot mesh
 
-
 // Macro for indexing vertex buffer
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -37,8 +36,8 @@ shaderLocations cubemap_shader_locations;
 
 // Variables referenced in header files
 bool camera_switch = false;
-vec3 camera_pos(0.0f, 0.0f, 0.0f);
-vec3 camera_front(0.0f, 0.0f, -10.0f);
+vec3 camera_pos(0.0f, 0.0f, 2.0f);
+vec3 camera_front(0.0f, 0.0f, -10.0f); // front z -10.0f;
 vec3 camera_up(0.0f, 1.0f, 0.0f);
 
 // ViewPort Dimensions
@@ -57,31 +56,48 @@ bool lightPositionToggle = false;
 // View Position
 GLuint viewPositionLocation;
 // Shader Type Ambient and Specular Lighting Strength
-float unlit_outline_thickness = 0.5f; // specular_strength_location
-float lit_outline_thickness = 0.5f; // ambient_strength_location
+float unlit_outline_thickness = 0.25f; // specular_strength_location
+float lit_outline_thickness = 0.15f; // ambient_strength_location
+float solid_outline_color = 0.0f;
+bool outline_selection = false;
 float wobble_distortion = 0.0f;
+bool texture_selection = false;
+float texture_luminance = 1.0f;
 float paper_alpha_thresh = 1.0f;
 float paper_alpha_div = 0.0f;
-UINT texture_selection = 0;
 
 // Model Load Variables & VAO Variables
-//BlenderObj sphereMesh("../meshes/cone.obj");
-BlenderObj sphereMesh("../meshes/bunny.obj");
+//BlenderObj sphereMesh("../meshes/airplane_incomplete_smooth.obj");
+BlenderObj sphereMesh("../meshes/ball_smooth.obj");
+//BlenderObj sphereMesh("../meshes/bamboo.obj");
 GLuint sphereVao;
 GLuint cubeMapVao;
 GLuint texCube;
 
+// Additional mesh VAOS for airplane
+BlenderObj propellerMesh("../meshes/bunny.obj");
+GLuint propellerVao;
+BlenderObj wheelMesh("../meshes/bunny.obj");
+GLuint wheelVao;
+
 // Mesh Projection Matrices
 ProjectionMatrices bunny_mesh;
-//vec3 bunny_position = vec3(0.0f, -0.9f, -30.0f);
-vec3 bunny_position = vec3(0.0f, -0.9f, -2.5f);
+//vec3 bunny_position = vec3(0.0f, -1.0f, -25.0f); // airplane
+vec3 bunny_position = vec3(0.0f, -1.0f, -3.0f); // bunny
+//vec3 bunny_position = vec3(0.5f, -1.9f, -1.5f); //Sumi-E bamboo
+//vec3 bunny_position = vec3(0.5f, -1.9f, -1.0f); //bamboo right side
+ProjectionMatrices propeller_mesh;
+ProjectionMatrices wheelR_mesh;
+ProjectionMatrices wheelL_mesh;
+ProjectionMatrices wheelC_mesh;
 float rotation_deg = 0;
+float rotation_deg_wheel_prop = 0;
 bool bunny_rotation_toggle = false;
 
 // Texture/Normal map ID
-GLuint paper_texture_id;
-GLuint paper_normal_id;
-GLuint paper_height_id;
+GLuint brush_texture_id;
+GLuint mesh_texture_id;
+GLuint mesh_normal_id;
 
 // Tweak Bar
 TwBar* shader_settings;
@@ -114,6 +130,7 @@ void display() {
 	// Blending part goes here
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_CULL_FACE);     // Cull back facing polygons
 	glCullFace(GL_BACK);
 
 	// Uniforms
@@ -121,19 +138,34 @@ void display() {
 	int view_mat_location = glGetUniformLocation(reflection_program_id, "view");
 	int proj_mat_location = glGetUniformLocation(reflection_program_id, "proj");
 	int ortho_mat_location = glGetUniformLocation(reflection_program_id, "ortho");
-	int texture_location = glGetUniformLocation(reflection_program_id, "texture_map");
+	int brush_texture_location = glGetUniformLocation(reflection_program_id, "brush_texture_map");
+	int mesh_texture_location = glGetUniformLocation(reflection_program_id, "mesh_texture_map");
+	int mesh_normal_location = glGetUniformLocation(reflection_program_id, "mesh_normal_map");
+
 	int lit_outline_thickness_location = glGetUniformLocation(reflection_program_id, "lit_outline_thickness");
 	int unlit_outline_thickness_location = glGetUniformLocation(reflection_program_id, "ulit_outline_thickness");
+	int solid_outline_color_location = glGetUniformLocation(reflection_program_id, "solid_outline_color_location");
+	int outline_selection_location = glGetUniformLocation(reflection_program_id, "outline_selection_location");
 	int wobble_distortion_location = glGetUniformLocation(reflection_program_id, "wobble_distortion");
+	int texture_selection_location = glGetUniformLocation(reflection_program_id, "texture_selection");
+	int texture_luminance_location = glGetUniformLocation(reflection_program_id, "texture_luminance");
 	int paper_alpha_threshold_location = glGetUniformLocation(reflection_program_id, "paper_alpha_threshold");
 	int paper_alpha_div_location = glGetUniformLocation(reflection_program_id, "paper_alpha_div");
 	// Using Program
 	glUseProgram(reflection_program_id);
 
+	// 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, paper_texture_id);
-	glUniform1i(texture_location, 0);
-	
+	glBindTexture(GL_TEXTURE_2D, brush_texture_id);
+	glUniform1i(brush_texture_location, 0);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, mesh_texture_id);
+	glUniform1i(mesh_texture_location, 1);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, mesh_normal_id);
+	glUniform1i(mesh_normal_location, 1);
+
+	// main model
 	glBindVertexArray(sphereVao);
 	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, bunny_mesh.projection.m);
 	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, bunny_mesh.view.m);
@@ -141,11 +173,27 @@ void display() {
 	glUniformMatrix4fv(ortho_mat_location, 1, GL_FALSE, bunny_mesh.ortho.m);
 	glDrawArrays(GL_TRIANGLES, 0, sphereMesh.getNumVertices());
 
+	//// propeller & wheel model
+	//glBindVertexArray(propellerVao);
+	//glUniformMatrix4fv(model_location, 1, GL_FALSE, propeller_mesh.model.m);
+	//glDrawArrays(GL_TRIANGLES, 0, propellerMesh.getNumVertices());
+	//glBindVertexArray(wheelVao);
+	//glUniformMatrix4fv(model_location, 1, GL_FALSE, wheelC_mesh.model.m);
+	//glDrawArrays(GL_TRIANGLES, 0, wheelMesh.getNumVertices());
+	//glUniformMatrix4fv(model_location, 1, GL_FALSE, wheelR_mesh.model.m);
+	//glDrawArrays(GL_TRIANGLES, 0, wheelMesh.getNumVertices());
+	//glUniformMatrix4fv(model_location, 1, GL_FALSE, wheelL_mesh.model.m);
+	//glDrawArrays(GL_TRIANGLES, 0, wheelMesh.getNumVertices());
+
 	// Uniform Variables
 	glUniform3f(reflection_locations.light_position_location, lightPosition.v[0], lightPosition.v[1], lightPosition.v[2]);
 	glUniform3f(reflection_locations.view_position_location, camera_pos.v[0], camera_pos.v[1], camera_pos.v[2]);
 	glUniform1f(reflection_locations.lit_outline_thickness_location, lit_outline_thickness);
 	glUniform1f(reflection_locations.unlit_outline_thickness_location, unlit_outline_thickness);
+	glUniform1f(reflection_locations.solid_outline_color_location, solid_outline_color);
+	glUniform1f(reflection_locations.outline_selection_location, outline_selection);
+	glUniform1f(reflection_locations.texture_selection_location, texture_selection);
+	glUniform1f(reflection_locations.texture_luminance_location, texture_luminance);
 	glUniform1f(reflection_locations.wobble_distortion_location, wobble_distortion);
 	glUniform1f(reflection_locations.paper_alpha_threshold_location, paper_alpha_thresh);
 	glUniform1f(reflection_locations.paper_alpha_div_location, paper_alpha_div);
@@ -164,18 +212,52 @@ void updateScene() {
 	if (delta > 0.03f)
 		delta = 0.03f;
 	last_time = curr_time;
+
+	// camera update
+	camera_front = camera_pos;
+	camera_front.v[2] -= 10.0f;
+	//std::cout << "Camera  Pos --> X: " << camera_pos.v[0] << ", Y: "<<camera_pos.v[1] << ", Z:" <<camera_pos.v[2] << std::endl;
+	//std::cout << "Camera Frnt --> X: " << camera_front.v[0] << ", Y: " << camera_front.v[1] << ", Z:" << camera_front.v[2] << std::endl;
 	// Model Matrix
 	if (bunny_rotation_toggle == true) {
 		rotation_deg += 0.075;
 	}
-	bunny_mesh.model = rotate_y_deg(identity_mat4(), rotation_deg);
-	bunny_mesh.model = scale(bunny_mesh.model, vec3(12.0f, 12.0f, 12.0f));
+	rotation_deg_wheel_prop += 0.5;
+	
+
+	bunny_mesh.model = scale(identity_mat4(), vec3(1, 1, 1));
+	bunny_mesh.model = rotate_y_deg(bunny_mesh.model, rotation_deg);
+	//bunny_mesh.model = scale(bunny_mesh.model, vec3(0.008f, 0.008f, 0.008f)); // Scale bamboo tree
+	//bunny_mesh.model = scale(bunny_mesh.model, vec3(0.025f, 0.025f, 0.025f)); // Plane scale
 	bunny_mesh.model = translate(bunny_mesh.model, bunny_position);
+	
 
 	// View matrix
 	bunny_mesh.view = look_at(camera_pos,
 								camera_front,
 								camera_up);
+
+
+	//Hierarchy models
+	// Propeller
+	propeller_mesh = bunny_mesh;
+	propeller_mesh.model = translate(bunny_mesh.model, bunny_position);
+	//propeller_mesh.model = rotate_z_deg(identity_mat4(), rotation_deg_wheel_prop);
+	//propeller_mesh.model = translate(propeller_mesh.model, vec3(0, -45, -400));
+	//propeller_mesh.model = bunny_mesh.model * propeller_mesh.model;
+	// Wheel Back
+	wheelC_mesh.model = rotate_x_deg(identity_mat4(), rotation_deg_wheel_prop);
+	wheelC_mesh.model = translate(wheelC_mesh.model, vec3(0, -125, 265));
+	wheelC_mesh.model = bunny_mesh.model * wheelC_mesh.model;
+	// Wheel Right
+	wheelR_mesh.model = rotate_x_deg(identity_mat4(), rotation_deg_wheel_prop);
+	wheelR_mesh.model = translate(wheelR_mesh.model, vec3(-105, -155, -230));
+	wheelR_mesh.model = bunny_mesh.model * wheelR_mesh.model;
+	// Wheel Left
+	wheelL_mesh.model = rotate_x_deg(identity_mat4(), rotation_deg_wheel_prop);
+	wheelL_mesh.model = translate(wheelL_mesh.model, vec3(105, -155, -230));
+	wheelL_mesh.model = bunny_mesh.model * wheelL_mesh.model;
+
 	// Light position
 	lightPositionUpdate(lightPositionDirection, lightPosition, lightPositionToggle);
 
@@ -194,10 +276,14 @@ void init()
 	CompileShaders(reflection_program_id, "../Shaders/vertexShader.glsl", "../Shaders/sumiEShader.glsl");
 	CompileShaders(cubeMapShaderID, "../Shaders/cubeMapVertexShader.glsl", "../Shaders/cubeMapFragmentShader.glsl");
 
-	bind_texture(paper_texture_id, "../textures/brush_pattern_3.jpg");
+	bind_texture(brush_texture_id, "../textures/brush_pattern_3.jpg");
+	bind_texture(mesh_texture_id, "../textures/orange_texture.jpg");
+	bind_texture(mesh_normal_id, "../textures/orange_normal.jpg");
 
 	// load mesh into a vertex buffer array
 	generateObjectBuffer(sphereVao, sphereMesh, reflection_program_id, reflection_locations);
+	generateObjectBuffer(propellerVao, propellerMesh, reflection_program_id, reflection_locations);
+	generateObjectBuffer(wheelVao, wheelMesh, reflection_program_id, reflection_locations);
 	compile_cube_map(cubeMapVao, cubeMapShaderID, cubemap_shader_locations);
 	create_cube_map("../Canvas/negz.jpg",
 		"../Canvas/posz.jpg",
@@ -219,7 +305,7 @@ int main(int argc, char** argv){
 	glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGB);
     glutInitWindowSize(width, height);
-    glutCreateWindow("Assignment 5 - Non Photorrealistic Rendering");
+    glutCreateWindow("Dissertation - SumiE Shader");
 
 	// Ant Tweak Bar Init
 	TwInit(TW_OPENGL, NULL);
@@ -228,20 +314,23 @@ int main(int argc, char** argv){
 	TwWindowSize(width, height);
 	shader_settings = TwNewBar("Shader Settings");
 	TwAddVarRW(shader_settings, "Unlit Outline", TW_TYPE_FLOAT, &unlit_outline_thickness, "label='Unlit Outline Thickness' min=-10 max=10 step=0.05 help='Unlit Outline Thickness'");
-	TwAddVarRW(shader_settings, "Lit Outline", TW_TYPE_FLOAT, &lit_outline_thickness, "label='Lit Outline Thickness' min=-10 max=10 step=0.05 help='Lit Outline Thickness'");
-	TwAddVarRW(shader_settings, "Wobble", TW_TYPE_FLOAT, &wobble_distortion, "label='Wobble Distortion' min=-10 max=10 step=0.05 help='Wobble Distortion'");
+	TwAddVarRW(shader_settings, "Lit Outline", TW_TYPE_FLOAT, &lit_outline_thickness, "label='Lit Outline Thickness' min=-10 max=10 step=0.01 help='Lit Outline Thickness'");
+	TwAddVarRW(shader_settings, "Solid Outline Color", TW_TYPE_FLOAT, &solid_outline_color, "label='Solid Outline Color' min=0 max=1.0 step=0.01 help='Solid Outline Color'");
+	TwAddVarRW(shader_settings, "Outline Selection", TW_TYPE_BOOLCPP, &outline_selection, "label='Outline Selection' help='Outline Selection'");
+	TwAddVarRW(shader_settings, "Wobble Distortion", TW_TYPE_FLOAT, &wobble_distortion, "label='Wobble Distortion' min=-5 max=5 step=0.01 help='Wobble Distortion'");
+	TwAddVarRW(shader_settings, "Texture Selection", TW_TYPE_BOOLCPP, &texture_selection, "label='Texture Selection' help='Texture Selection'");
+	TwAddVarRW(shader_settings, "Texture Luminance", TW_TYPE_FLOAT, &texture_luminance, "label='Texture Luminance' min=1 max=2.0 step=0.01 help='Texture Luminance'");
 	TwAddVarRW(shader_settings, "Paper A Thresh ", TW_TYPE_FLOAT, &paper_alpha_thresh, "label='Paper A Thresh' min=0 max=1 step=0.001 help='Paper A Thresh'");
 	TwAddVarRW(shader_settings, "Paper A Thresh Skip", TW_TYPE_FLOAT, &paper_alpha_div, "label='Paper A Thresh Skip' min=0 max=1.0 step=0.001 help='Paper A Thresh Skip'");
-	//TwAddVarRW(shader_settings, "Texture Selection", TW_TYPE_INT8, &texture_selection, "label='Texture Selection' min=0 max=3 step=1 help='Texture Selection'");
-
+	
 	// Tell glut where the display function is
 	glutDisplayFunc(display);
 	glutIdleFunc(updateScene);
 	// glut and tweakbar callbacks
 	glutKeyboardFunc(key_press);
 	glutSpecialFunc(special_keypress);
-	glutMouseFunc(mouse_click);
 	glutKeyboardFunc(key_press);
+	glutMouseFunc(mouse_wheel_click);
 	glutMotionFunc((GLUTmousemotionfun)TwEventMouseMotionGLUT);
 	glutPassiveMotionFunc((GLUTmousemotionfun)TwEventMouseMotionGLUT); // same as MouseMotion
 

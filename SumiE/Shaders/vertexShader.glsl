@@ -22,5 +22,5 @@ void main(){
 	vs_normals = normalize(mat3(model) * vertex_normals);
 	vs_position = mat3(model) * vertex_position;
 	a_texture_coordinate = texture_coordinate;
-	gl_Position =  proj * model * view * ortho* vec4 (vertex_position, 1.0);
+	gl_Position =  proj * view * model * vec4 (vertex_position, 1.0);
 }

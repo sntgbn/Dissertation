@@ -10,18 +10,18 @@ void key_press(unsigned char key, int mouse_x, int mouse_y) {
 	{
 		switch (key) {
 			//// Camera controls
-			//case('w'):
-			//	camera_pos += camera_front*camera_speed_z;
-			//	break;
-			//case('s'):
-			//	camera_pos -= camera_front*camera_speed_z;
-			//	break;
-			//case('a'):
-			//	camera_pos -= normalise(cross(camera_front, camera_up))*camera_speed_x;
-			//	break;
-			//case('d'):
-			//	camera_pos += normalise(cross(camera_front, camera_up))*camera_speed_x;
-			//	break;
+			case('w'):
+				camera_pos.v[1] += 0.01f;
+				break;
+			case('s'):
+				camera_pos.v[1] -= 0.01f;
+				break;
+			case('a'):
+				camera_pos.v[0] -= 0.01f;
+				break;
+			case('d'):
+				camera_pos.v[0] += 0.01f;
+				break;
 			// Reset Condition
 		case('l'):
 			std::cout << "Changing light position" << std::endl;
@@ -33,7 +33,9 @@ void key_press(unsigned char key, int mouse_x, int mouse_y) {
 			bunny_rotation_toggle = !bunny_rotation_toggle;
 			break;
 		case('R'):
-			camera_front = vec3(0.0f, 0.0f, -10.0f);
+			camera_pos = vec3(0.0f, 0.0f, 0.0f);
+			camera_front = camera_pos;
+			camera_front.v[2] -= 10.0f;
 			camera_up = vec3(0.0f, 1.0f, 0.0f);
 			// Sphere positions
 			bunny_position = vec3(0.0f, -1.0f, -3.0f);
@@ -50,13 +52,33 @@ void mouse_move(int x, int y) {
 	//y_mouse = (float)-(y - height / 2) / (height / 2);
 };
 
-void mouse_wheel(int key, int wheeldir, int x, int y) {
-	//if (wheeldir ==  1)
-	//{
-	//	z_mouse -= 0.2f;
-	//} else if (wheeldir == -1){
-	//	z_mouse += 0.2f;
-	//}
+void mouse_wheel_click(int key, int wheeldir, int x, int y) {
+	if (!TwEventMouseButtonGLUT(key, wheeldir, x, y))
+	{
+		if (wheeldir == GLUT_DOWN) {
+			switch (key) {
+			case GLUT_LEFT_BUTTON:
+				//std::cout << "left click at: (" << x << ", " << y << ")\n";
+				break;
+			case GLUT_RIGHT_BUTTON:
+				//std::cout << "right click at: (" << x << ", " << y << ")\n";
+				break;
+			case GLUT_MIDDLE_BUTTON:
+				//std::cout << "middle click at: (" << x << ", " << y << ")\n";
+				break;
+				//mouse wheel scrolls
+			case 3:
+				camera_pos.v[2] += 0.01f;
+				break;
+			case 4:
+				camera_pos.v[2] -= 0.01f;
+				break;
+			default:
+				break;
+			}
+		}
+	}
+	glutPostRedisplay();
 }
 
 void special_keypress(int key, int x, int y) {
@@ -85,11 +107,3 @@ void special_keypress(int key, int x, int y) {
 		}
 	}
 };
-
-void mouse_click(int button, int state, int mouse_x, int mouse_y)
-{
-	if (!TwEventMouseButtonGLUT(button, state, mouse_x, mouse_y))
-	{
-		std::cout << "mouse_clickL: something goes here, maybe" << std::endl;
-	}
-}
