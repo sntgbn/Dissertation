@@ -107,10 +107,6 @@ void main() {
 			}
 		}else{
 			vec3 diffuse_texture_color = texture(mesh_texture_map, a_texture_coordinate).rgb;
-			// float tone_texture_u = min(intensity*(0.3*diffuse_texture_color.r + 
-			// 								 	 0.59*diffuse_texture_color.g +
-			// 								 	 0.11*diffuse_texture_color.b),
-			// 						   1);
 			float tone_texture_u = clamp(intensity*(0.3*diffuse_texture_color.r + 
 											 	 0.59*diffuse_texture_color.g +
 											 	 0.11*diffuse_texture_color.b),

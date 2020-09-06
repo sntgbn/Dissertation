@@ -239,7 +239,7 @@ void updateScene() {
 	// View matrix
 	bunny_mesh.view = look_at(camera_pos,
 								camera_front,
-								camera_up);
+								camera_up);	
 
 
 	//Hierarchy models
