@@ -61,6 +61,7 @@ float lit_outline_thickness = 0.15f; // ambient_strength_location
 float solid_outline_color = 0.0f;
 bool outline_selection = false;
 float wobble_distortion = 0.0f;
+bool cel_shader_selection = true;
 bool texture_selection = false;
 float texture_luminance = 1.0f;
 float paper_alpha_thresh = 1.0f;
@@ -97,7 +98,7 @@ bool bunny_rotation_toggle = false;
 // Texture/Normal map ID
 GLuint brush_texture_id;
 GLuint mesh_texture_id;
-GLuint mesh_normal_id;
+GLuint tone_texture_id;
 
 // Tweak Bar
 TwBar* shader_settings;
@@ -140,13 +141,14 @@ void display() {
 	int ortho_mat_location = glGetUniformLocation(reflection_program_id, "ortho");
 	int brush_texture_location = glGetUniformLocation(reflection_program_id, "brush_texture_map");
 	int mesh_texture_location = glGetUniformLocation(reflection_program_id, "mesh_texture_map");
-	int mesh_normal_location = glGetUniformLocation(reflection_program_id, "mesh_normal_map");
+	int tone_texture_location = glGetUniformLocation(reflection_program_id, "tone_texture_map");
 
 	int lit_outline_thickness_location = glGetUniformLocation(reflection_program_id, "lit_outline_thickness");
 	int unlit_outline_thickness_location = glGetUniformLocation(reflection_program_id, "ulit_outline_thickness");
 	int solid_outline_color_location = glGetUniformLocation(reflection_program_id, "solid_outline_color_location");
 	int outline_selection_location = glGetUniformLocation(reflection_program_id, "outline_selection_location");
 	int wobble_distortion_location = glGetUniformLocation(reflection_program_id, "wobble_distortion");
+	int cel_shader_selection_location = glGetUniformLocation(reflection_program_id, "cel_shader_selection");
 	int texture_selection_location = glGetUniformLocation(reflection_program_id, "texture_selection");
 	int texture_luminance_location = glGetUniformLocation(reflection_program_id, "texture_luminance");
 	int paper_alpha_threshold_location = glGetUniformLocation(reflection_program_id, "paper_alpha_threshold");
@@ -162,8 +164,8 @@ void display() {
 	glBindTexture(GL_TEXTURE_2D, mesh_texture_id);
 	glUniform1i(mesh_texture_location, 1);
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, mesh_normal_id);
-	glUniform1i(mesh_normal_location, 1);
+	glBindTexture(GL_TEXTURE_2D, tone_texture_id);
+	glUniform1i(tone_texture_location, 2);
 
 	// main model
 	glBindVertexArray(sphereVao);
@@ -192,6 +194,7 @@ void display() {
 	glUniform1f(reflection_locations.unlit_outline_thickness_location, unlit_outline_thickness);
 	glUniform1f(reflection_locations.solid_outline_color_location, solid_outline_color);
 	glUniform1f(reflection_locations.outline_selection_location, outline_selection);
+	glUniform1f(reflection_locations.cel_shader_selection_location, cel_shader_selection);
 	glUniform1f(reflection_locations.texture_selection_location, texture_selection);
 	glUniform1f(reflection_locations.texture_luminance_location, texture_luminance);
 	glUniform1f(reflection_locations.wobble_distortion_location, wobble_distortion);
@@ -278,7 +281,7 @@ void init()
 
 	bind_texture(brush_texture_id, "../textures/brush_pattern_3.jpg");
 	bind_texture(mesh_texture_id, "../textures/orange_texture.jpg");
-	bind_texture(mesh_normal_id, "../textures/orange_normal.jpg");
+	bind_texture(tone_texture_id, "../textures/tone_texture.jpg");
 
 	// load mesh into a vertex buffer array
 	generateObjectBuffer(sphereVao, sphereMesh, reflection_program_id, reflection_locations);
@@ -315,9 +318,10 @@ int main(int argc, char** argv){
 	shader_settings = TwNewBar("Shader Settings");
 	TwAddVarRW(shader_settings, "Unlit Outline", TW_TYPE_FLOAT, &unlit_outline_thickness, "label='Unlit Outline Thickness' min=-10 max=10 step=0.05 help='Unlit Outline Thickness'");
 	TwAddVarRW(shader_settings, "Lit Outline", TW_TYPE_FLOAT, &lit_outline_thickness, "label='Lit Outline Thickness' min=-10 max=10 step=0.01 help='Lit Outline Thickness'");
-	TwAddVarRW(shader_settings, "Solid Outline Color", TW_TYPE_FLOAT, &solid_outline_color, "label='Solid Outline Color' min=0 max=1.0 step=0.01 help='Solid Outline Color'");
 	TwAddVarRW(shader_settings, "Outline Selection", TW_TYPE_BOOLCPP, &outline_selection, "label='Outline Selection' help='Outline Selection'");
+	TwAddVarRW(shader_settings, "Solid Outline Color", TW_TYPE_FLOAT, &solid_outline_color, "label='Solid Outline Color' min=0 max=1.0 step=0.01 help='Solid Outline Color'");
 	TwAddVarRW(shader_settings, "Wobble Distortion", TW_TYPE_FLOAT, &wobble_distortion, "label='Wobble Distortion' min=-5 max=5 step=0.01 help='Wobble Distortion'");
+	TwAddVarRW(shader_settings, "Cel Shader Selection", TW_TYPE_BOOLCPP, &cel_shader_selection, "label='Cel Shader Selection' help='Cel Shader Selection'");
 	TwAddVarRW(shader_settings, "Texture Selection", TW_TYPE_BOOLCPP, &texture_selection, "label='Texture Selection' help='Texture Selection'");
 	TwAddVarRW(shader_settings, "Texture Luminance", TW_TYPE_FLOAT, &texture_luminance, "label='Texture Luminance' min=1 max=2.0 step=0.01 help='Texture Luminance'");
 	TwAddVarRW(shader_settings, "Paper A Thresh ", TW_TYPE_FLOAT, &paper_alpha_thresh, "label='Paper A Thresh' min=0 max=1 step=0.001 help='Paper A Thresh'");

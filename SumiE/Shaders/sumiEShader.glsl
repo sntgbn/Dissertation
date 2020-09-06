@@ -9,7 +9,7 @@ in vec2 a_texture_coordinate;
 
 uniform sampler2D brush_texture_map;
 uniform sampler2D mesh_texture_map;
-uniform sampler2D mesh_normal_map;
+uniform sampler2D tone_texture_map;
 
 uniform samplerCube cube_texture;
 
@@ -21,7 +21,7 @@ uniform vec3 lightPos, viewPos;
 uniform float ambientStrength, specularStrength;
 	// Turn to uniforms later
 uniform float lit_outline_thickness, unlit_outline_thickness, solid_outline_color, wobble_distortion, texture_luminance, paper_alpha_threshold, paper_alpha_div;
-uniform bool outline_selection, texture_selection;
+uniform bool outline_selection, texture_selection, cel_shader_selection;
 // Rename/delete these
 uniform float diffuse_factor, dry_brush_granulation, dry_brush_density; // Make this uniform variable (?)
 
@@ -61,49 +61,57 @@ void main() {
 		}
 		
 	} else {
-
-		// Main color W
-		if (intensity > 0.6) {
-			color = vec4(1.0, 1.0, 1.0, 1.0);
-		}
-		// Transition from secondary colors 3
-		// Secondary color LG-W2
-		else if (intensity > 0.525) {
-			color = vec4(0.89, 0.89, 0.89, 1.0);
-		}
-		// Secondary color LG-W1
-		else if (intensity > 0.475) {
-			color = vec4(0.8, 0.8, 0.8, 1.0);
-		}
-		// Main color LG
-		else if (intensity > 0.4) {
-			color = vec4(0.737, 0.737, 0.737, 1.0);
-		}
-		// Transition from secondary colors 2
-		// Secondary color DG-LG2
-		else if (intensity > 0.325) {
-			color = vec4(0.6235, 0.6235, 0.6235, 1.0);
-		}
-		// Secondary color DG-LG1
-		else if (intensity > 0.275) {
-			color = vec4(0.43, 0.43, 0.43, 1.0);
-		}
-		// Main color DG
-		else if (intensity > 0.2) {
-			color = vec4(0.321, 0.321, 0.321, 1.0);
-		}
-		// Transition from secondary colors 1
-		// Secondary color B-DG2
-		else if (intensity > 0.125) {
-			color = vec4(0.2313, 0.2313, 0.2313, 1.0);
-		}
-		// Secondary color B-DG1
-		else if (intensity > 0.075) {
-			color = vec4(0.098, 0.098, 0.098, 1.0);
-		}
-		// Main color B
-		else {
-			color = vec4(0.0, 0.0, 0.0, 1.0);
+		if(cel_shader_selection == true){
+			// Main color W
+			if (intensity > 0.6) {
+				color = vec4(1.0, 1.0, 1.0, 1.0);
+			}
+			// Transition from secondary colors 3
+			// Secondary color LG-W2
+			else if (intensity > 0.525) {
+				color = vec4(0.89, 0.89, 0.89, 1.0);
+			}
+			// Secondary color LG-W1
+			else if (intensity > 0.475) {
+				color = vec4(0.8, 0.8, 0.8, 1.0);
+			}
+			// Main color LG
+			else if (intensity > 0.4) {
+				color = vec4(0.737, 0.737, 0.737, 1.0);
+			}
+			// Transition from secondary colors 2
+			// Secondary color DG-LG2
+			else if (intensity > 0.325) {
+				color = vec4(0.6235, 0.6235, 0.6235, 1.0);
+			}
+			// Secondary color DG-LG1
+			else if (intensity > 0.275) {
+				color = vec4(0.43, 0.43, 0.43, 1.0);
+			}
+			// Main color DG
+			else if (intensity > 0.2) {
+				color = vec4(0.321, 0.321, 0.321, 1.0);
+			}
+			// Transition from secondary colors 1
+			// Secondary color B-DG2
+			else if (intensity > 0.125) {
+				color = vec4(0.2313, 0.2313, 0.2313, 1.0);
+			}
+			// Secondary color B-DG1
+			else if (intensity > 0.075) {
+				color = vec4(0.098, 0.098, 0.098, 1.0);
+			}
+			// Main color B
+			else {
+				color = vec4(0.0, 0.0, 0.0, 1.0);
+			}
+		}else{
+			vec3 diffuse_texture_color = texture(mesh_texture_map, a_texture_coordinate).rgb;
+			float tone_texture_u = min(intensity*(0.3*diffuse_texture_color.r + 
+											 	 0.59*diffuse_texture_color.g +
+											 	 0.11*diffuse_texture_color.b),
+									   1);
+			color = texture(tone_texture_map, vec2(tone_texture_u, 0.5));
 		}
 	}
 	if(texture_selection==true){
