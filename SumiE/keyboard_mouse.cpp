@@ -40,6 +40,8 @@ void key_press(unsigned char key, int mouse_x, int mouse_y) {
 			// Sphere positions
 			bunny_position = vec3(0.0f, -1.0f, -3.0f);
 			bunny_rotation_toggle = false;
+			lightPosition = vec3(0, 10, 0);
+			lightPositionToggle = false;
 			rotation_deg = 0.0f;
 			break;
 		}

@@ -28,7 +28,7 @@ uniform float diffuse_factor, dry_brush_granulation, dry_brush_density; // Make 
 const vec3 ambientColor = vec3(0.0, 1.0, 0.0);
 const vec3 diffuseColor = vec3(1.0, 1.0, 1.0);
 const vec3 specColor = vec3(0.5, 0.5, 0.5);
-const vec2 resolution  = vec2(800, 600);
+const vec2 resolution  = vec2(1024, 768);
 
 void main() {
 	// Global Lighting Variables
@@ -107,10 +107,14 @@ void main() {
 			}
 		}else{
 			vec3 diffuse_texture_color = texture(mesh_texture_map, a_texture_coordinate).rgb;
-			float tone_texture_u = min(intensity*(0.3*diffuse_texture_color.r + 
+			// float tone_texture_u = min(intensity*(0.3*diffuse_texture_color.r + 
+			// 								 	 0.59*diffuse_texture_color.g +
+			// 								 	 0.11*diffuse_texture_color.b),
+			// 						   1);
+			float tone_texture_u = clamp(intensity*(0.3*diffuse_texture_color.r + 
 											 	 0.59*diffuse_texture_color.g +
 											 	 0.11*diffuse_texture_color.b),
-									   1);
+									   	0, 1);
 			color = texture(tone_texture_map, vec2(tone_texture_u, 0.5));
 		}
 	}
@@ -130,7 +134,7 @@ void main() {
 		color.a = clamp((1 - avg_color), 0.0, 1.0);
 	} 
 
-	// Threshold values
+	// Threshold valuesfor discarding pixels
 	if(color.a < paper_alpha_div){
 		discard;
 	}

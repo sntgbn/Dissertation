@@ -11,10 +11,10 @@ void lightPositionUpdate(vec3 & lightPosDir, vec3 & lightPos, bool & lightPosTog
 			lightPosDir.v[1] = 0;
 		}
 		if (lightPosDir.v[1] == 0) {
-			lightPos.v[1] = lightPos.v[1] + 0.005;
+			lightPos.v[1] = lightPos.v[1] + 0.015;
 		}
 		else if (lightPosDir.v[1] == 1) {
-			lightPos.v[1] = lightPos.v[1] - 0.005;
+			lightPos.v[1] = lightPos.v[1] - 0.015;
 		}
 		// Moving up/down Z axis
 		if (lightPos.v[2] >= 10.0f) {
@@ -24,10 +24,10 @@ void lightPositionUpdate(vec3 & lightPosDir, vec3 & lightPos, bool & lightPosTog
 			lightPosDir.v[2] = 0;
 		}
 		if (lightPosDir.v[2] == 0) {
-			lightPos.v[2] = lightPos.v[2] + 0.005;
+			lightPos.v[2] = lightPos.v[2] + 0.015;
 		}
 		else if (lightPosDir.v[2] == 1) {
-			lightPos.v[2] = lightPos.v[2] - 0.005;
+			lightPos.v[2] = lightPos.v[2] - 0.015;
 		}
 	}
 

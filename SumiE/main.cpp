@@ -69,7 +69,7 @@ float paper_alpha_div = 0.0f;
 
 // Model Load Variables & VAO Variables
 //BlenderObj sphereMesh("../meshes/airplane_incomplete_smooth.obj");
-BlenderObj sphereMesh("../meshes/ball_smooth.obj");
+BlenderObj sphereMesh("../meshes/bunny.obj");
 //BlenderObj sphereMesh("../meshes/bamboo.obj");
 GLuint sphereVao;
 GLuint cubeMapVao;
@@ -84,7 +84,8 @@ GLuint wheelVao;
 // Mesh Projection Matrices
 ProjectionMatrices bunny_mesh;
 //vec3 bunny_position = vec3(0.0f, -1.0f, -25.0f); // airplane
-vec3 bunny_position = vec3(0.0f, -1.0f, -3.0f); // bunny
+vec3 bunny_position = vec3(0.0f, -1.0f, -3.0f);
+//vec3 bunny_position = vec3(0.0f, -1.0f, -3.0f); // ball
 //vec3 bunny_position = vec3(0.5f, -1.9f, -1.5f); //Sumi-E bamboo
 //vec3 bunny_position = vec3(0.5f, -1.9f, -1.0f); //bamboo right side
 ProjectionMatrices propeller_mesh;
@@ -180,7 +181,7 @@ void display() {
 	//glUniformMatrix4fv(model_location, 1, GL_FALSE, propeller_mesh.model.m);
 	//glDrawArrays(GL_TRIANGLES, 0, propellerMesh.getNumVertices());
 	//glBindVertexArray(wheelVao);
-	//glUniformMatrix4fv(model_location, 1, GL_FALSE, wheelC_mesh.model.m);
+	//glUniformMatrix4fv(model_location, 1, GL_FALSE, wheelC_mesh.model.m);	
 	//glDrawArrays(GL_TRIANGLES, 0, wheelMesh.getNumVertices());
 	//glUniformMatrix4fv(model_location, 1, GL_FALSE, wheelR_mesh.model.m);
 	//glDrawArrays(GL_TRIANGLES, 0, wheelMesh.getNumVertices());
@@ -228,7 +229,7 @@ void updateScene() {
 	rotation_deg_wheel_prop += 0.5;
 	
 
-	bunny_mesh.model = scale(identity_mat4(), vec3(1, 1, 1));
+	bunny_mesh.model = scale(identity_mat4(), vec3(12, 12, 12));
 	bunny_mesh.model = rotate_y_deg(bunny_mesh.model, rotation_deg);
 	//bunny_mesh.model = scale(bunny_mesh.model, vec3(0.008f, 0.008f, 0.008f)); // Scale bamboo tree
 	//bunny_mesh.model = scale(bunny_mesh.model, vec3(0.025f, 0.025f, 0.025f)); // Plane scale
