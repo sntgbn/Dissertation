@@ -20,7 +20,7 @@ uniform mat4 model, ortho, proj, view;
 uniform vec3 lightPos, viewPos;
 uniform float ambientStrength, specularStrength;
 	// Turn to uniforms later
-uniform float lit_outline_thickness, unlit_outline_thickness, solid_outline_color, wobble_distortion, texture_luminance, paper_alpha_threshold, paper_alpha_div;
+uniform float lit_outline_thickness, unlit_outline_thickness, solid_outline_color, wobble_distortion, texture_luminance, avg_color_alpha_threshold, alpha_skip_threshold;
 uniform bool outline_selection, texture_selection, cel_shader_selection;
 // Rename/delete these
 uniform float diffuse_factor, dry_brush_granulation, dry_brush_density; // Make this uniform variable (?)
@@ -130,12 +130,12 @@ void main() {
 
 	// Average color used to obtain alpha value
 	float avg_color = clamp((color.x + color.y + color.z)/3, 0.0, 1.0);
-	if(avg_color <= paper_alpha_threshold){
+	if(avg_color > avg_color_alpha_threshold){
 		color.a = clamp((1 - avg_color), 0.0, 1.0);
 	} 
 
 	// Threshold valuesfor discarding pixels
-	if(color.a < paper_alpha_div){
+	if(color.a <= alpha_skip_threshold){
 		discard;
 	}
 	frag_color = color;

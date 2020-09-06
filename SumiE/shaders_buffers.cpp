@@ -26,8 +26,8 @@ void generateObjectBuffer(GLuint& objectVao, BlenderObj& blenderObject, GLuint& 
     shaderVariableLocations.cel_shader_selection_location = glGetUniformLocation(shaderProgramID, "cel_shader_selection");
     shaderVariableLocations.texture_selection_location = glGetUniformLocation(shaderProgramID, "texture_selection");
     shaderVariableLocations.texture_luminance_location = glGetUniformLocation(shaderProgramID, "texture_luminance");
-    shaderVariableLocations.paper_alpha_threshold_location = glGetUniformLocation(shaderProgramID, "paper_alpha_threshold");
-    shaderVariableLocations.paper_alpha_div_location = glGetUniformLocation(shaderProgramID, "paper_alpha_div");
+    shaderVariableLocations.avg_color_alpha_threshold_location = glGetUniformLocation(shaderProgramID, "avg_color_alpha_threshold");
+    shaderVariableLocations.alpha_skip_threshold_location = glGetUniformLocation(shaderProgramID, "alpha_skip_threshold");
 
     glGenBuffers(1, &vp_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vp_vbo);

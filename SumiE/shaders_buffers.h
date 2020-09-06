@@ -34,8 +34,8 @@ class shaderLocations {
 		GLuint cel_shader_selection_location;
 		GLuint texture_selection_location;
 		GLuint texture_luminance_location;
-		GLuint paper_alpha_threshold_location;
-		GLuint paper_alpha_div_location;
+		GLuint avg_color_alpha_threshold_location;
+		GLuint alpha_skip_threshold_location;
 };
 
 void generateObjectBuffer(GLuint& objectVao, BlenderObj& blenderObject, GLuint& shaderProgramID, shaderLocations& shaderVariableLocations);
