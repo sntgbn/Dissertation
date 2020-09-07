@@ -68,25 +68,26 @@ float avg_color_alpha_threshold = 1.0f;
 float alpha_skip_threshold = 0.0f;
 
 // Model Load Variables & VAO Variables
-//BlenderObj sphereMesh("../meshes/airplane_incomplete_smooth.obj");
 BlenderObj sphereMesh("../meshes/bunny.obj");
+//BlenderObj sphereMesh("../meshes/airplane_incomplete.obj");
+//BlenderObj sphereMesh("../meshes/ball_smooth.obj");
 //BlenderObj sphereMesh("../meshes/bamboo.obj");
 GLuint sphereVao;
 GLuint cubeMapVao;
 GLuint texCube;
 
 // Additional mesh VAOS for airplane
-BlenderObj propellerMesh("../meshes/bunny.obj");
+BlenderObj propellerMesh("../meshes/propeller.obj");
 GLuint propellerVao;
-BlenderObj wheelMesh("../meshes/bunny.obj");
+BlenderObj wheelMesh("../meshes/wheel.obj");
 GLuint wheelVao;
 
 // Mesh Projection Matrices
 ProjectionMatrices bunny_mesh;
 //vec3 bunny_position = vec3(0.0f, -1.0f, -25.0f); // airplane
-vec3 bunny_position = vec3(0.0f, -1.0f, -3.0f);
+vec3 bunny_position = vec3(0.0f, -1.0f, -3.0f); // bunny
 //vec3 bunny_position = vec3(0.0f, -1.0f, -3.0f); // ball
-//vec3 bunny_position = vec3(0.5f, -1.9f, -1.5f); //Sumi-E bamboo
+//vec3 bunny_position = vec3(0.5f, -1.9f, -1.5f); //bamboo
 //vec3 bunny_position = vec3(0.5f, -1.9f, -1.0f); //bamboo right side
 ProjectionMatrices propeller_mesh;
 ProjectionMatrices wheelR_mesh;
@@ -157,7 +158,7 @@ void display() {
 	// Using Program
 	glUseProgram(reflection_program_id);
 
-	// 
+	// Assignment of textures
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, brush_texture_id);
 	glUniform1i(brush_texture_location, 0);
@@ -176,6 +177,11 @@ void display() {
 	glUniformMatrix4fv(ortho_mat_location, 1, GL_FALSE, bunny_mesh.ortho.m);
 	glDrawArrays(GL_TRIANGLES, 0, sphereMesh.getNumVertices());
 
+	//glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, propeller_mesh.projection.m);
+	//glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, propeller_mesh.view.m);
+	//glUniformMatrix4fv(model_location, 1, GL_FALSE, propeller_mesh.model.m);
+	//glUniformMatrix4fv(ortho_mat_location, 1, GL_FALSE, propeller_mesh.ortho.m);
+	//glDrawArrays(GL_TRIANGLES, 0, sphereMesh.getNumVertices());
 	//// propeller & wheel model
 	//glBindVertexArray(propellerVao);
 	//glUniformMatrix4fv(model_location, 1, GL_FALSE, propeller_mesh.model.m);
@@ -229,10 +235,11 @@ void updateScene() {
 	rotation_deg_wheel_prop += 0.5;
 	
 
-	bunny_mesh.model = scale(identity_mat4(), vec3(12, 12, 12));
+	bunny_mesh.model = scale(identity_mat4(), vec3(12, 12, 12)); // Scale bunny
+	//bunny_mesh.model = scale(identity_mat4(), vec3(0.008f, 0.008f, 0.008f)); // Scale bamboo tree
+	//bunny_mesh.model = scale(identity_mat4(), vec3(0.025f, 0.025f, 0.025f)); // Plane scale
+	//bunny_mesh.model = scale(identity_mat4(), vec3(1, 1, 1)); // Scale ball
 	bunny_mesh.model = rotate_y_deg(bunny_mesh.model, rotation_deg);
-	//bunny_mesh.model = scale(bunny_mesh.model, vec3(0.008f, 0.008f, 0.008f)); // Scale bamboo tree
-	//bunny_mesh.model = scale(bunny_mesh.model, vec3(0.025f, 0.025f, 0.025f)); // Plane scale
 	bunny_mesh.model = translate(bunny_mesh.model, bunny_position);
 	
 
@@ -243,24 +250,23 @@ void updateScene() {
 
 
 	//Hierarchy models
-	// Propeller
-	propeller_mesh = bunny_mesh;
-	propeller_mesh.model = translate(bunny_mesh.model, bunny_position);
-	//propeller_mesh.model = rotate_z_deg(identity_mat4(), rotation_deg_wheel_prop);
-	//propeller_mesh.model = translate(propeller_mesh.model, vec3(0, -45, -400));
-	//propeller_mesh.model = bunny_mesh.model * propeller_mesh.model;
-	// Wheel Back
-	wheelC_mesh.model = rotate_x_deg(identity_mat4(), rotation_deg_wheel_prop);
-	wheelC_mesh.model = translate(wheelC_mesh.model, vec3(0, -125, 265));
-	wheelC_mesh.model = bunny_mesh.model * wheelC_mesh.model;
-	// Wheel Right
-	wheelR_mesh.model = rotate_x_deg(identity_mat4(), rotation_deg_wheel_prop);
-	wheelR_mesh.model = translate(wheelR_mesh.model, vec3(-105, -155, -230));
-	wheelR_mesh.model = bunny_mesh.model * wheelR_mesh.model;
-	// Wheel Left
-	wheelL_mesh.model = rotate_x_deg(identity_mat4(), rotation_deg_wheel_prop);
-	wheelL_mesh.model = translate(wheelL_mesh.model, vec3(105, -155, -230));
-	wheelL_mesh.model = bunny_mesh.model * wheelL_mesh.model;
+	//// Propeller
+	//propeller_mesh.model = scale(identity_mat4(), vec3(5, 5, 5)); //
+	//propeller_mesh.model = rotate_y_deg(propeller_mesh.model, rotation_deg);
+	//propeller_mesh.model = translate(propeller_mesh.model, vec3(0.0f, -1.0f, -30.0f));
+	//propeller_mesh.view = bunny_mesh.view;
+	//// Wheel Back
+	//wheelC_mesh.model = rotate_x_deg(identity_mat4(), rotation_deg_wheel_prop);
+	//wheelC_mesh.model = translate(wheelC_mesh.model, vec3(0, -125, 265));
+	//wheelC_mesh.model = bunny_mesh.model * wheelC_mesh.model;
+	//// Wheel Right
+	//wheelR_mesh.model = rotate_x_deg(identity_mat4(), rotation_deg_wheel_prop);
+	//wheelR_mesh.model = translate(wheelR_mesh.model, vec3(-105, -155, -230));
+	//wheelR_mesh.model = bunny_mesh.model * wheelR_mesh.model;
+	//// Wheel Left
+	//wheelL_mesh.model = rotate_x_deg(identity_mat4(), rotation_deg_wheel_prop);
+	//wheelL_mesh.model = translate(wheelL_mesh.model, vec3(105, -155, -230));
+	//wheelL_mesh.model = bunny_mesh.model * wheelL_mesh.model;
 
 	// Light position
 	lightPositionUpdate(lightPositionDirection, lightPosition, lightPositionToggle);
@@ -304,6 +310,7 @@ int main(int argc, char** argv){
 	bunny_mesh.projection = perspective(90.0, (float)(width) / (float)height, 0.1, 100.0);
 	bunny_mesh.model = scale(identity_mat4(), vec3(100.0f, 100.0f, 100.0f));
 	bunny_mesh.ortho = identity_mat4();
+	propeller_mesh = bunny_mesh;
 
 	// Set up the window
 	glutInit(&argc, argv);
@@ -327,6 +334,7 @@ int main(int argc, char** argv){
 	TwAddVarRW(shader_settings, "Texture Luminance", TW_TYPE_FLOAT, &texture_luminance, "label='Texture Luminance' min=1 max=2.0 step=0.01 help='Texture Luminance'");
 	TwAddVarRW(shader_settings, "Avg Color Alpha Threshold", TW_TYPE_FLOAT, &avg_color_alpha_threshold, "label='Avg Color Alpha Threshold' min=0 max=1 step=0.001 help='Avg Color Alpha Threshold'");
 	TwAddVarRW(shader_settings, "Alpha Threshold Skip", TW_TYPE_FLOAT, &alpha_skip_threshold, "label='Alpha Threshold Skip' min=0 max=1.0 step=0.001 help='Alpha Threshold Skip'");
+	//TwAddVarRO(shader_settings, "fps", TW_TYPE_DOUBLE, @fps, " label='frames per second' precision=2 help='FPS a TweakBar double.' ")
 	
 	// Tell glut where the display function is
 	glutDisplayFunc(display);
